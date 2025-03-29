@@ -187,9 +187,13 @@ class CalendarTests(TestCase):
         data = response.json()
         share_token = data["share_token"]
 
-        # Get CSRF token for view_calendar page
-        response = self.client.get(reverse("view_calendar", args=[share_token]))
-        csrf_token = get_token(response.wsgi_request)  # Get a fresh CSRF token
+        # Test calendar data retrieval
+        response = self.client.get(reverse("get_calendar_data", args=[share_token]))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["month"], 0)
+        self.assertEqual(data["year"], 2024)
+        self.assertEqual(data["title"], "Test Calendar")
 
         # Add some time slots
         response = self.client.post(
@@ -200,7 +204,7 @@ class CalendarTests(TestCase):
                 "start_time": "09:00",
                 "end_time": "10:00",
             },
-            HTTP_X_CSRFTOKEN=csrf_token,  # Add this CSRF token
+            HTTP_X_CSRFTOKEN=csrf_token,
         )
         self.assertEqual(response.status_code, 200)
 
